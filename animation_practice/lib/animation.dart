@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+
+/// Flutter code sample for [Hero].
 
 void main() {
-  runApp(const MyApp());
+  // Slow down time to see Hero flight animation.
+  timeDilation = 15.0;
+  runApp(const AnimationApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class AnimationApp extends StatelessWidget {
+  const AnimationApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -16,28 +20,13 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Animation Practice'),
+      home: const AnimationExample(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
+class HeroExample extends StatelessWidget {
+  const HeroExample({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -46,25 +35,97 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+      body: Column(
+        children: <Widget>[
+          ListTile(
+            leading: Hero(
+              tag: 'hero-default-tween',
+              child: BoxWidget(
+                size: const Size(50.0, 50.0),
+                color: Colors.limeAccent[700]!.withOpacity(0.5),
+              ),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            title: const Text(
+              'This red icon will use a default rect tween during the hero flight.',
             ),
-          ],
+          ),
+          const SizedBox(height: 10.0),
+          ListTile(
+            leading: Hero(
+              tag: 'hero-custom-tween',
+              createRectTween: (Rect? begin, Rect? end) {
+                return MaterialRectCenterArcTween(begin: begin, end: end);
+              },
+              child: BoxWidget(
+                size: const Size(50.0, 50.0),
+                color: Colors.pink[700]!.withOpacity(0.5),
+              ),
+            ),
+            title: const Text(
+              'This blue icon will use a custom rect tween during the hero flight.',
+            ),
+          ),
+          const SizedBox(height: 10),
+          ElevatedButton(
+            onPressed: () => _gotoDetailsPage(context),
+            child: const Text('Tap me'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _gotoDetailsPage(BuildContext context) {
+    Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (BuildContext context) => Scaffold(
+        appBar: AppBar(
+          title: const Text('Second Page'),
+        ),
+        body: Align(
+          alignment: Alignment.bottomRight,
+          child: Stack(
+            children: <Widget>[
+              Hero(
+                tag: 'hero-custom-tween',
+                createRectTween: (Rect? begin, Rect? end) {
+                  return MaterialRectCenterArcTween(begin: begin, end: end);
+                },
+                child: BoxWidget(
+                  size: const Size(400.0, 400.0),
+                  color: Colors.limeAccent[700]!.withOpacity(0.5),
+                ),
+              ),
+              Hero(
+                tag: 'hero-default-tween',
+                child: BoxWidget(
+                  size: const Size(400.0, 400.0),
+                  color: Colors.pink[700]!.withOpacity(0.5),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    ));
+  }
+}
+
+class BoxWidget extends StatelessWidget {
+  const BoxWidget({
+    super.key,
+    required this.size,
+    required this.color,
+  });
+
+  final Size size;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size.width,
+      height: size.height,
+      color: color,
     );
   }
 }
